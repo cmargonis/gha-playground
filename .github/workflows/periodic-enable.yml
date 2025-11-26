@@ -10,5 +10,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       # Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v5
       - name: Enable workflow
         run: gh workflow enable periodic-work.yml
