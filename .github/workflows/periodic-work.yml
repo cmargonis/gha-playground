@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      NO_PAGER: "true"
     steps:
       # Checkout repository
       - name: Checkout Repository
@@ -20,7 +21,7 @@ jobs:
       - name: Get latest release or pre release
         id: check_merge
         run: |
-          raw_latest_release=$(gh release list --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
+          raw_latest_release=$(gh release list --limit 1 --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
         
           if [[ -z "$raw_latest_release" ]]; then
             echo "Error: Could not determine the latest release."
