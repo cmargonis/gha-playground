@@ -32,7 +32,7 @@ jobs:
           echo "Latest release: $latest_release"
           
           # Check if the grep command found anything
-          merge_commit_log=$(git log main --merges --oneline | grep $latest_release)
+          merge_commit_log=$(git log main --merges --oneline | grep xaxaxa)
           echo "Merge log: $merge_commit_log"
           if [[ -n "$merge_commit_log" ]]; then
             # If the log is NOT empty, the old release has been merged, proceed
