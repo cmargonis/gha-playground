@@ -27,7 +27,7 @@ jobs:
             exit 1 # Exit with an error code if no release is found
           fi
           # Drop the first character ('v') from the release tag
-          latest_release=${raw_latest_release:1}
+          latest_release=${raw_latest_release#v}
           echo "Latest release: $latest_release"
           
           # Check if the grep command found anything
