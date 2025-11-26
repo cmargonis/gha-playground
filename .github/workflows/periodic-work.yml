@@ -18,9 +18,11 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
       - name: Get latest release or pre release
         id: check_merge
         run: |
+          
           raw_latest_release=$(gh release list --limit 1 --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
         
           if [[ -z "$raw_latest_release" ]]; then
@@ -32,7 +34,7 @@ jobs:
           echo "Latest release: $latest_release"
           
           # Check if the grep command found anything
-          merge_commit_log=$(git log main --merges --oneline | grep xaxaxa)
+          merge_commit_log=$(git log main --merges --oneline | grep $latest_release)
           echo "Merge log: $merge_commit_log"
           if [[ -n "$merge_commit_log" ]]; then
             # If the log is NOT empty, the old release has been merged, proceed
