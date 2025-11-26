@@ -1,0 +1,24 @@
+name: "Periodic Work"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  do-work:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Ensure we have an up-to-date main branch
+      - name: Fetch and checkout main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      # Step to run the release script that creates a new release branch.
+      - name: Sleep for 1 minute
+        run: sleep 60
