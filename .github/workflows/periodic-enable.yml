@@ -7,7 +7,7 @@ jobs:
   do-work:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ secrets.WORKFLOW_PAT }}
     steps:
       # Checkout repository
       - name: Checkout Repository
