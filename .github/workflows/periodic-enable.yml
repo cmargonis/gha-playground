@@ -1,0 +1,14 @@
+name: "Enable the periodic workflow"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  do-work:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Checkout repository
+      - name: Enable workflow
+        run: gh workflow enable periodic-work.yml
