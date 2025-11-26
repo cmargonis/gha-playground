@@ -22,6 +22,8 @@ jobs:
       - name: Get latest release or pre release
         id: check_merge
         run: |
+          git fetch origin main
+          git checkout -B main origin/main
           
           raw_latest_release=$(gh release list --limit 1 --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
         
