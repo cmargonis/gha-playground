@@ -37,7 +37,13 @@ jobs:
           
           # Check if the grep command found anything
           merge_commit_log=$(git log main --merges --oneline | grep $latest_release)
-          echo "Merge log: $merge_commit_log"
+          
+          if [[ -n "$merge_commit_log" ]]; then
+            echo "Merge log: $merge_commit_log"
+          else
+            echo "Merge log is empty: No merge commit found for $latest_release."
+          fi
+          
           if [[ -n "$merge_commit_log" ]]; then
             # If the log is NOT empty, the old release has been merged, proceed
             echo "Found merge commit for release $latest_release:"
