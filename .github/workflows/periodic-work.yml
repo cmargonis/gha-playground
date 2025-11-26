@@ -21,7 +21,7 @@ jobs:
         id: check_merge
         run: |
           raw_latest_release=$(gh release list --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
-          echo "Resolved release!: $raw_latest_release"
+        
           if [[ -z "$raw_latest_release" ]]; then
             echo "Error: Could not determine the latest release."
             exit 1 # Exit with an error code if no release is found
@@ -32,6 +32,7 @@ jobs:
           
           # Check if the grep command found anything
           merge_commit_log=$(git log main --merges --oneline | grep $latest_release)
+          echo "Merge log: $merge_commit_log"
           if [[ -n "$merge_commit_log" ]]; then
             # If the log is NOT empty, the old release has been merged, proceed
             echo "Found merge commit for release $latest_release:"
