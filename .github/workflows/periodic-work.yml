@@ -20,41 +20,32 @@ jobs:
           fetch-depth: 0
           ref: main
       - name: Get latest release or pre release
-        id: check_merge
+        id: check_prev_release
         run: |          
-          raw_latest_release=$(gh release list --limit 1 --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName' | xargs)
+          raw_latest_release=$(gh release list --limit 5 --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName' | xargs)
         
           if [[ -z "$raw_latest_release" ]]; then
             echo "Error: Could not determine the latest release."
-            exit 1 # Exit with an error code if no release is found
+            exit 1
           fi
           # Drop the first character ('v') from the release tag
           latest_release=${raw_latest_release#v}
-          echo "Latest release: $latest_release"
           
           # Check if the grep command found anything
           merge_commit_log=$(git log main --merges --oneline | grep $latest_release || true)
           
           if [[ -n "$merge_commit_log" ]]; then
-            echo "Merge log: $merge_commit_log"
-          else
-            echo "Merge log is empty: No merge commit found for $latest_release."
-          fi
-          
-          if [[ -n "$merge_commit_log" ]]; then
-            # If the log is NOT empty, the old release has been merged, proceed
             echo "Found merge commit for release $latest_release:"
             echo "$merge_commit_log"
-            echo "is_merged=true" >> "$GITHUB_OUTPUT"
+            echo "has_previous_release_completed=true" >> "$GITHUB_OUTPUT"
           else
-            # If the log IS empty, the release has not been merged
-            echo "No merge commit found for release $latest_release on the main branch."
-            echo "is_merged=false" >> "$GITHUB_OUTPUT"
+            echo "No merge commit found for release $latest_release on develop."
+            echo "has_previous_release_completed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Do work
-        # This step will only execute if the 'is_merged' output from the 'check_merge' step was 'true'
-        if: steps.check_merge.outputs.is_merged == 'true'
+        # This step will only execute if the 'has_previous_release_completed' output from the 'check_prev_release' step was 'true'
+        if: steps.check_prev_release.outputs.has_previous_release_completed == 'true'
         run: |
           echo "Success! The latest release has been merged into the main branch."
           echo "Sleeping for 1 minute"
@@ -62,6 +53,6 @@ jobs:
 
       - name: This step runs ONLY if the release was NOT merged
         # This is an optional step to provide clear feedback in the opposite case
-        if: steps.check_merge.outputs.is_merged == 'false'
+        if: steps.check_prev_release.outputs.has_previous_release_completed == 'false'
         run: |
           echo "Action required: The latest release has not been merged into the main branch yet."
