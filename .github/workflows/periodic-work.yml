@@ -21,7 +21,7 @@ jobs:
         id: check_merge
         run: |
           raw_latest_release=$(gh release list --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName')
-          if [[ -z "raw_latest_release" ]]; then
+          if [[ -z "$raw_latest_release" ]]; then
             echo "Error: Could not determine the latest release."
             exit 1 # Exit with an error code if no release is found
           fi
