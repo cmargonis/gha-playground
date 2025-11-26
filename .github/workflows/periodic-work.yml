@@ -15,16 +15,41 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      # Ensure we have an up-to-date main branch
-      - name: Fetch and checkout main
+      - name: Get latest release or pre release
+        id: check_merge
         run: |
-          git fetch origin main
-          git checkout -B main origin/main
+          raw_latest_release=$(gh release list --json tagName,isDraft --jq 'map(select(.isDraft | not)) | .[0].tagName’)
+          if [[ -z "raw_latest_release" ]]; then
+            echo "Error: Could not determine the latest release."
+            exit 1 # Exit with an error code if no release is found
+          fi
+          # Drop the first character ('v') from the release tag
+          latest_release=${raw_latest_release:1}
+          echo "Latest release: $latest_release"
+          
+          # Check if the grep command found anything
+          merge_commit_log=git log main --merges --oneline | grep $latest_release
+          if [[ -n "$merge_commit_log" ]]; then
+            # If the log is NOT empty, the old release has been merged, proceed
+            echo "Found merge commit for release $latest_release:"
+            echo "$merge_commit_log"
+            echo "is_merged=true" >> "$GITHUB_OUTPUT"
+          else
+            # If the log IS empty, the release has not been merged
+            echo "No merge commit found for release $latest_release on the main branch."
+            echo "is_merged=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      # Step to run the release script that creates a new release branch.
-      - name: Sleep for 1 minute
-        run: sleep 60
+      - name: Do work
+        # This step will only execute if the 'is_merged' output from the 'check_merge' step was 'true'
+        if: steps.check_merge.outputs.is_merged == 'true'
+        run: |
+          echo "Success! The latest release has been merged into the main branch."
+          echo "Sleeping for 1 minute"
+          sleep 60
 
-      - name: Output result
-        run: echo "Periodic work completed"
+      - name: This step runs ONLY if the release was NOT merged
+        # This is an optional step to provide clear feedback in the opposite case
+        if: steps.check_merge.outputs.is_merged == 'false'
+        run: |
+          echo "Action required: The latest release has not been merged into the main branch yet."
